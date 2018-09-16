@@ -5,8 +5,8 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "nexe": "nexe index.js --no-bundle -o app.exe --target windows-ia32-6.10.3",
-    "pkg": "pkg index.js --target node8-win-x64 --output app.exe"
+    "nexe": "nexe index.js --no-bundle -o xml-task.exe --target windows-ia32-6.10.3",
+    "pkg": "pkg index.js --target node8-win-x64 --output xml-task.exe"
   },
   "keywords": [],
   "author": "",
