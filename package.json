@@ -1,0 +1,19 @@
+{
+  "name": "xml-task",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "nexe": "nexe index.js --no-bundle -o app.exe --target windows-ia32-6.10.3",
+    "pkg": "pkg index.js --target node8-win-x64 --output app.exe"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "node-fetch": "^2.2.0",
+    "xml2rec": "^1.0.26"
+  },
+  "devDependencies": {}
+}
