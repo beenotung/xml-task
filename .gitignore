@@ -1,0 +1,7 @@
+280020ab
+dist/
+!dist/.gitkeep
+journeytime.csv
+node_modules/
+package-lock.json
+xml-task.exe
