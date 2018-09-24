@@ -10,6 +10,8 @@ var default_config = {
   tmpfilename: 'out.csv',
   interval_size: 2,
   interval_unit: 'minute',
+  '# mode can be either start or stop': '',
+  mode: 'start'
 };
 var config_file_path = 'xml-task.ini';
 
@@ -22,15 +24,22 @@ function readConfig() {
         if (line[0] === '#') {
           return;
         }
-        let idx = s.indexOf('=');
-        var key = s.substr(0, idx).trim();
-        var value = s.substr(idx + 1).trim();
+        var idx = line.indexOf('=');
+        var key = line.substr(0, idx).trim();
+        var value = line.substr(idx + 1).trim();
         config[key] = value;
       });
     return config;
   } catch (e) {
+    console.error(e);
     var config_file_content = '';
-    Object.keys(config).forEach(key => config_file_content += key + ' = ' + config[key] + '\n');
+    Object.keys(config).forEach(key => {
+      if (key[0] === '#') {
+        config_file_content += key + '\n'
+      } else {
+        config_file_content += key + ' = ' + config[key] + '\n';
+      }
+    });
     fs.writeFileSync(config_file_path, config_file_content);
   }
   return config;
@@ -96,6 +105,10 @@ function main(config) {
 function run_main() {
   console.log('checking for update:', new Date().toLocaleString());
   var config = readConfig();
+  if (config.mode === 'stop') {
+    process.exit(0);
+    return;
+  }
   main(config)
     .then(() => {
       var interval = config.interval_size;
