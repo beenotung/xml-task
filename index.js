@@ -9,6 +9,7 @@ var default_config = {
   outfilename: 'journeytime.csv',
   tmpfilename: 'out.csv',
   interval_size: 2,
+  '# interval_unit can be either minute or second': '',
   interval_unit: 'minute',
   '# mode can be either start or stop': '',
   mode: 'start'
@@ -31,7 +32,9 @@ function readConfig() {
       });
     return config;
   } catch (e) {
-    console.error(e);
+    if (e.code !== 'ENOENT') {
+      console.error(e);
+    }
     var config_file_content = '';
     Object.keys(config).forEach(key => {
       if (key[0] === '#') {
@@ -106,6 +109,7 @@ function run_main() {
   console.log('checking for update:', new Date().toLocaleString());
   var config = readConfig();
   if (config.mode === 'stop') {
+    console.log('stopping the program.');
     process.exit(0);
     return;
   }
