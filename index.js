@@ -4,9 +4,12 @@ var fs = require('fs');
 
 var default_config = {
   url: 'http://resource.data.one.gov.hk/td/journeytime.xml',
+  doc: 'jtis_journey_time',
   infilename: 'in.xml',
   outfilename: 'journeytime.csv',
   tmpfilename: 'out.csv',
+  interval_size: 2,
+  interval_unit: 'minute',
 };
 var config_file_path = 'xml-task.ini';
 
@@ -33,28 +36,18 @@ function readConfig() {
   return config;
 }
 
-Promise.resolve(readConfig())
-  .then(x => {
-    console.log('read config:', x);
-    process.exit(0)
-  })
-  .catch(e => {
-    console.error(e);
-    process.exit(1);
-  });
-
-function main() {
-  return fetch(url)
+function main(config) {
+  return fetch(config.url)
     .then(res => res.text())
     .then(text => {
-      fs.writeFileSync(infilename, text);
-      xml2rec(infilename, 'jtis_journey_time', tmpfilename);
+      fs.writeFileSync(config.infilename, text);
+      xml2rec(config.infilename, config.doc, config.tmpfilename);
       // wait until the file is ready
       return new Promise((resolve, reject) => {
         var loop = function () {
-          if (fs.existsSync(tmpfilename)) {
+          if (fs.existsSync(config.tmpfilename)) {
             try {
-              if (fs.readFileSync(tmpfilename).toString()) {
+              if (fs.readFileSync(config.tmpfilename).toString()) {
                 resolve();
                 return;
               }
@@ -69,43 +62,53 @@ function main() {
           // the file is ready now
 
           // check if this is the first time
-          if (fs.existsSync(outfilename)) {
+          if (fs.existsSync(config.outfilename)) {
             // not the first time, update existing file
-            var text = fs.readFileSync(tmpfilename).toString();
+            var text = fs.readFileSync(config.tmpfilename).toString();
             var lines = text.split('\n');
             lines.shift();
             var last = lines[lines.length - 1] || lines[lines.length - 2];
 
             // check if updated
-            var _lines = fs.readFileSync(outfilename).toString().split('\n');
+            var _lines = fs.readFileSync(config.outfilename).toString().split('\n');
             var _last = _lines[_lines.length - 1] || _lines[_lines.length - 2];
             if (last !== _last) {
               // remote data is updated, append to the local file
               text = lines.join('\n');
-              fs.appendFileSync(outfilename, text);
-              console.log('updated', outfilename);
+              fs.appendFileSync(config.outfilename, text);
+              console.log('updated', config.outfilename);
             } else {
               // remote data is not updated, done
               console.log('remote is not updated, skipping')
             }
 
-            fs.unlinkSync(tmpfilename);
+            fs.unlinkSync(config.tmpfilename);
           } else {
             // first time, just save to a new file
-            fs.renameSync(tmpfilename, outfilename);
-            console.log('saved to', outfilename);
+            fs.renameSync(config.tmpfilename, config.outfilename);
+            console.log('saved to', config.outfilename);
           }
-          fs.unlinkSync(infilename);
+          fs.unlinkSync(config.infilename);
         });
     });
 }
 
 function run_main() {
   console.log('checking for update:', new Date().toLocaleString());
-  main()
+  var config = readConfig();
+  main(config)
     .then(() => {
-      console.log('waiting to check again after 2 minutes...');
-      setTimeout(run_main, 1000 * 60 * 2);
+      var interval = config.interval_size;
+      if (config.interval_unit === 'minute') {
+        interval *= 1000 * 60;
+      } else if (config.interval_unit === 'second') {
+        interval *= 1000;
+      } else {
+        console.error('invalid interval_unit in ' + config_file_path + '!');
+        process.exit(1);
+      }
+      console.log('waiting to check again after ' + config.interval_size + ' ' + config.interval_unit + '...');
+      setTimeout(run_main, interval);
     })
     .catch(e => {
       console.error(e);
@@ -113,4 +116,4 @@ function run_main() {
     });
 }
 
-// run_main();
+run_main();
