@@ -15,5 +15,8 @@
     "node-fetch": "^2.2.0",
     "xml2rec": "^1.0.26"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "nexe": "^2.0.0-rc.34",
+    "pkg": "^4.3.4"
+  }
 }
