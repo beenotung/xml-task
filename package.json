@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "nexe": "nexe index.js -o xml-task.exe --target windows-ia32-6.10.3",
+    "nexe": "nexe index.js -o xml-task.exe --target windows-x64-10.9.0 # windows-ia32-6.10.3",
     "pkg": "pkg index.js --target node8-win-x64 --output xml-task.exe"
   },
   "keywords": [],
