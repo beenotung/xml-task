@@ -13,7 +13,7 @@
   "license": "ISC",
   "dependencies": {
     "node-fetch": "^2.2.0",
-    "xml2rec": "^1.0.26"
+    "xml-parser": "^1.2.1"
   },
   "devDependencies": {
     "@sindresorhus/is": "^0.12.0",
