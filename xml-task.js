@@ -1,20 +1,50 @@
 var fetch = require('node-fetch');
-var xml2rec = require('xml2rec');
 var fs = require('fs');
+var xmlParser = require('xml-parser');
 
 var default_config = {
   url: 'http://resource.data.one.gov.hk/td/journeytime.xml',
   doc: 'jtis_journey_time',
-  infilename: 'in.xml',
   outfilename: 'journeytime.csv',
-  tmpfilename: 'out.csv',
-  interval_size: 2,
+  '# set to be half of the remote update interval for safe': '',
+  interval_size: 1,
   '# interval_unit can be either minute or second': '',
   interval_unit: 'minute',
   '# mode can be either start or stop': '',
   mode: 'start'
 };
 var config_file_path = 'xml-task.ini';
+
+function jsonArray2csv(xs) {
+  if (xs.length === 0) {
+    return []
+  }
+  var lines = [];
+  let keys = Object.keys(xs[0]);
+  lines.push(keys.join(','));
+  xs.forEach(x => {
+    lines.push(keys.map(k => x[k]).join(','))
+  });
+  return lines.join('\n');
+}
+
+function xml2rec(xml, root) {
+  // fs.writeFileSync('data.xml', xml);
+  var json = xmlParser(xml);
+  // fs.writeFileSync('data.json', JSON.stringify(json));
+  var xs = [];
+  json.root.children.forEach(node => {
+    if (node.name !== root) {
+      return;
+    }
+    var x = {};
+    xs.push(x);
+    node.children.forEach(node => {
+      x[node.name] = node.content;
+    });
+  });
+  return jsonArray2csv(xs);
+}
 
 function readConfig() {
   var config = Object.assign({}, default_config);
@@ -51,57 +81,37 @@ function readConfig() {
 function main(config) {
   return fetch(config.url)
     .then(res => res.text())
-    .then(text => {
-      fs.writeFileSync(config.infilename, text);
-      xml2rec(config.infilename, config.doc, config.tmpfilename);
-      // wait until the file is ready
-      return new Promise((resolve, reject) => {
-        var loop = function () {
-          if (fs.existsSync(config.tmpfilename)) {
-            try {
-              if (fs.readFileSync(config.tmpfilename).toString()) {
-                resolve();
-                return;
-              }
-            } catch (e) {
-            }
-          }
-          setTimeout(loop, 100);
-        };
-        loop();
-      })
-        .then(() => {
-          // the file is ready now
+    .then(xml => {
+      var csv = xml2rec(xml, config.doc);
 
-          // check if this is the first time
-          if (fs.existsSync(config.outfilename)) {
-            // not the first time, update existing file
-            var text = fs.readFileSync(config.tmpfilename).toString();
-            var lines = text.split('\n');
-            lines.shift();
-            var last = lines[lines.length - 1] || lines[lines.length - 2];
+      // check if this is the first time
+      if (fs.existsSync(config.outfilename)) {
+        // not the first time, update existing file
 
-            // check if updated
-            var _lines = fs.readFileSync(config.outfilename).toString().split('\n');
-            var _last = _lines[_lines.length - 1] || _lines[_lines.length - 2];
-            if (last !== _last) {
-              // remote data is updated, append to the local file
-              text = lines.join('\n');
-              fs.appendFileSync(config.outfilename, text);
-              console.log('updated', config.outfilename);
-            } else {
-              // remote data is not updated, done
-              console.log('remote is not updated, skipping')
-            }
+        var lines = csv.split('\n');
+        lines.shift();
+        var last = lines[lines.length - 1] || lines[lines.length - 2];
 
-            fs.unlinkSync(config.tmpfilename);
-          } else {
-            // first time, just save to a new file
-            fs.renameSync(config.tmpfilename, config.outfilename);
-            console.log('saved to', config.outfilename);
-          }
-          fs.unlinkSync(config.infilename);
-        });
+        // check if updated
+        var _lines = fs.readFileSync(config.outfilename).toString().split('\n');
+        var _last = _lines[_lines.length - 1] || _lines[_lines.length - 2];
+        if (last !== _last) {
+          // remote data is updated, append to the local file
+          var new_csv = lines.join('\n') + '\n';
+          fs.appendFileSync(config.outfilename, new_csv);
+          console.log('updated', config.outfilename);
+        } else {
+          // remote data is not updated, done
+          console.log('remote is not updated, skipping')
+        }
+
+      } else {
+        // first time, just save to a new file
+        if (csv[csv.length - 1] !== '\n') {
+          csv += '\n';
+        }
+        fs.writeFileSync(config.outfilename, csv);
+      }
     });
 }
 
