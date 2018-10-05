@@ -2,11 +2,11 @@
   "name": "xml-task",
   "version": "0.1.0",
   "description": "",
-  "main": "index.js",
+  "main": "xml-task.js",
   "scripts": {
-    "start": "node index.js",
-    "nexe": "nexe index.js -o xml-task.exe --target windows-x64-10.9.0 # windows-ia32-6.10.3",
-    "pkg": "pkg index.js --target node8-win-x64 --output xml-task.exe"
+    "start": "node xml-task.js",
+    "nexe": "nexe xml-task.js -o xml-task.exe --target windows-x64-10.9.0 # windows-ia32-6.10.3",
+    "pkg": "pkg xml-task.js --target node8-win-x64 --output xml-task.exe"
   },
   "keywords": [],
   "author": "",
