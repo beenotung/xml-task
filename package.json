@@ -1,7 +1,7 @@
 {
   "name": "xml-task",
   "version": "0.1.0",
-  "description": "",
+  "description": "automatically download open data from HKGov..",
   "main": "xml-task.js",
   "scripts": {
     "start": "node xml-task.js",
@@ -20,5 +20,13 @@
     "nexe": "^2.0.0-rc.34",
     "pkg": "^4.3.4",
     "realm-utils": "^1.0.9"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/beenotung/xml-task.git"
+  },
+  "bugs": {
+    "url": "https://github.com/beenotung/xml-task/issues"
+  },
+  "homepage": "https://github.com/beenotung/xml-task#readme"
 }
