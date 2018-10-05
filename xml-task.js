@@ -20,7 +20,7 @@ function jsonArray2csv(xs) {
     return []
   }
   var lines = [];
-  let keys = Object.keys(xs[0]);
+  var keys = Object.keys(xs[0]);
   lines.push(keys.join(','));
   xs.forEach(x => {
     lines.push(keys.map(k => x[k]).join(','))
